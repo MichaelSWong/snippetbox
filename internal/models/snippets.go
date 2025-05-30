@@ -7,10 +7,11 @@ import (
 )
 
 type Snippet struct {
-	ID      int       `json:"id"`
-	Title   string    `json:"title"`
-	Content string    `json:"content"`
-	Expires time.Time `json:"expires"`
+	ID         int       `json:"id"`
+	Title      string    `json:"title"`
+	Content    string    `json:"content"`
+	Created_At time.Time `json:"created_at"`
+	Expires    time.Time `json:"expires"`
 }
 
 type SnippetModel struct {
@@ -33,7 +34,7 @@ func (m *SnippetModel) Insert(title, content string, expires int) (int, error) {
 
 func (m *SnippetModel) Get(id int) (Snippet, error) {
 	stmt := `
-	SELECT id, title, content, expires 
+	SELECT id, title, content, created_at, expires 
 	FROM snippets
 	WHERE expires > CURRENT_TIMESTAMP and id = $1
 	`
@@ -42,6 +43,7 @@ func (m *SnippetModel) Get(id int) (Snippet, error) {
 		&s.ID,
 		&s.Title,
 		&s.Content,
+		&s.Created_At,
 		&s.Expires,
 	)
 	if err != nil {
