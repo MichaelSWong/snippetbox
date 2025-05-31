@@ -58,7 +58,7 @@ func (m *SnippetModel) Get(id int) (Snippet, error) {
 
 func (m *SnippetModel) Latest() ([]Snippet, error) {
 	stmt := `
-	SELECT id, title, content, expires FROM snippets
+	SELECT id, title, content, created_at, expires FROM snippets
 	WHERE expires > CURRENT_TIMESTAMP ORDER BY id DESC LIMIT 10
 	`
 	rows, err := m.DB.Query(stmt)
@@ -73,7 +73,7 @@ func (m *SnippetModel) Latest() ([]Snippet, error) {
 	for rows.Next() {
 		var s Snippet
 
-		err = rows.Scan(&s.ID, &s.Title, &s.Content, &s.Expires)
+		err = rows.Scan(&s.ID, &s.Title, &s.Content, &s.Created_At, &s.Expires)
 		if err != nil {
 			return nil, err
 		}
