@@ -4,6 +4,7 @@ go 1.24.3
 
 require (
 	github.com/jackc/pgx/v5 v5.7.5
+	github.com/justinas/alice v1.2.0
 	github.com/pressly/goose/v3 v3.24.3
 )
 
