@@ -10,15 +10,15 @@ import (
 )
 
 type Snippet struct {
-	ID         int       `json:"id"`
-	Title      string    `json:"title"`
-	Content    string    `json:"content"`
-	Created_At time.Time `json:"created_at"`
-	Expires    time.Time `json:"expires"`
+	ID        int       `json:"id"`
+	Title     string    `json:"title"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+	Expires   time.Time `json:"expires"`
 }
 
 type SnippetModel struct {
-	DB *pgxpool.Pool
+	Pool *pgxpool.Pool
 }
 
 func (m *SnippetModel) Insert(title, content string, expires int) (int, error) {
@@ -28,7 +28,7 @@ func (m *SnippetModel) Insert(title, content string, expires int) (int, error) {
 		RETURNING id
 	`
 	var lastInsertId int
-	err := m.DB.QueryRow(context.Background(), stmt, title, content, expires).Scan(&lastInsertId)
+	err := m.Pool.QueryRow(context.Background(), stmt, title, content, expires).Scan(&lastInsertId)
 	if err != nil {
 		return 0, err
 	}
@@ -42,11 +42,11 @@ func (m *SnippetModel) Get(id int) (Snippet, error) {
 	WHERE expires > CURRENT_TIMESTAMP and id = $1
 	`
 	var s Snippet
-	err := m.DB.QueryRow(context.Background(), stmt, id).Scan(
+	err := m.Pool.QueryRow(context.Background(), stmt, id).Scan(
 		&s.ID,
 		&s.Title,
 		&s.Content,
-		&s.Created_At,
+		&s.CreatedAt,
 		&s.Expires,
 	)
 	if err != nil {
@@ -64,7 +64,7 @@ func (m *SnippetModel) Latest() ([]Snippet, error) {
 	SELECT id, title, content, created_at, expires FROM snippets
 	WHERE expires > CURRENT_TIMESTAMP ORDER BY id DESC LIMIT 10
 	`
-	rows, err := m.DB.Query(context.Background(), stmt)
+	rows, err := m.Pool.Query(context.Background(), stmt)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (m *SnippetModel) Latest() ([]Snippet, error) {
 	for rows.Next() {
 		var s Snippet
 
-		err = rows.Scan(&s.ID, &s.Title, &s.Content, &s.Created_At, &s.Expires)
+		err = rows.Scan(&s.ID, &s.Title, &s.Content, &s.CreatedAt, &s.Expires)
 		if err != nil {
 			return nil, err
 		}

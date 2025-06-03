@@ -20,6 +20,7 @@ import (
 type application struct {
 	logger         *slog.Logger
 	snippets       *models.SnippetModel
+	users          *models.UserModel
 	templateCache  map[string]*template.Template
 	formDecoder    *form.Decoder
 	sessionManager *scs.SessionManager
@@ -32,18 +33,18 @@ func main() {
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	db, err := store.OpenDB(*dsn)
+	pool, err := store.OpenDB(*dsn)
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
 
-	err = store.MigrateFS(db, migrations.FS, ".")
+	err = store.MigrateFS(pool, migrations.FS, ".")
 	if err != nil {
 		panic(err)
 	}
 
-	defer db.Close()
+	defer pool.Close()
 
 	templateCache, err := newTemplateCache()
 	if err != nil {
@@ -54,12 +55,13 @@ func main() {
 	formDecoder := form.NewDecoder()
 
 	sessionManager := scs.New()
-	sessionManager.Store = pgxstore.New(db)
+	sessionManager.Store = pgxstore.New(pool)
 	sessionManager.Lifetime = 12 * time.Hour
 
 	app := &application{
 		logger:         logger,
-		snippets:       &models.SnippetModel{DB: db},
+		snippets:       &models.SnippetModel{Pool: pool},
+		users:          &models.UserModel{Pool: pool},
 		templateCache:  templateCache,
 		formDecoder:    formDecoder,
 		sessionManager: sessionManager,
