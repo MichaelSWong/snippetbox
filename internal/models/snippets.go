@@ -22,7 +22,7 @@ type SnippetModel struct {
 }
 
 type SnippetModelInterface interface {
-	Insert(title, content string, expires int) (int, error)
+	Insert(title string, content string, expires int) (int, error)
 	Get(id int) (Snippet, error)
 	Latest() ([]Snippet, error)
 }
@@ -33,12 +33,12 @@ func (m *SnippetModel) Insert(title, content string, expires int) (int, error) {
 		VALUES ($1, $2, CURRENT_TIMESTAMP + make_interval(days => $3))
 		RETURNING id
 	`
-	var lastInsertId int
-	err := m.Pool.QueryRow(context.Background(), stmt, title, content, expires).Scan(&lastInsertId)
+	var lastInsertID int
+	err := m.Pool.QueryRow(context.Background(), stmt, title, content, expires).Scan(&lastInsertID)
 	if err != nil {
 		return 0, err
 	}
-	return lastInsertId, nil
+	return lastInsertID, nil
 }
 
 func (m *SnippetModel) Get(id int) (Snippet, error) {
